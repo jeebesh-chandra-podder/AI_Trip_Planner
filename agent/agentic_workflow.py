@@ -1,7 +1,7 @@
 from utils.model_loader import ModelLoader
 from prompt_library.prompt import SYSTEM_PROMPT
 from langgraph.graph import StateGraph, MessagesState, END, START
-#from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode, tools_condition
 #from tools.weather_info_tool import WeatherInfoTool
 #from tools.place_search_tool import PlaceSearchTool
 #from tools.expense_calculator_tool import CalculatorTool
@@ -11,11 +11,19 @@ from langgraph.graph import StateGraph, MessagesState, END, START
 
 class GraphBuilder():
     def __init__(self):
-        pass
+        self.tools = [] 
     def agent_function(self):
         pass
     def build_graph(self):
-        pass
+        graph_builder = StateGraph(MessagesState)
+
+        graph_builder.add_node("agent", self.agent_function)
+        graph_builder.add_node("tools", ToolNode(tools = self.tools))
+        graph_builder.add_edge(START,"agent")
+        graph_builder.add_conditional_edges("agent", tools_condition)
+        graph_builder.add_edge("tools", "agent")
+        graph_builder.add_edge("agent",END)
+        
 
     def __call__(self):
         pass

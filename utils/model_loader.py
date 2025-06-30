@@ -7,18 +7,25 @@ from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 
 
+# This class wraps the configuration dictionary so you can access values like a dictionary.
 class ConfigLoader:
     def __init__(self):
         print(f"Loaded config.....")
-        self.config = load_config()
+        self.config = load_config()  # Loads settings from a config file
     
     def __getitem__(self, key):
-        return self.config[key]
+        return self.config[key] # Allows dict-style access (e.g., config["llm"])
 
 class ModelLoader(BaseModel):
+    
+    ## It's a Pydantic data model, which means it’s validated on creation.
+    ## You can specify whether to use "groq" or "openai".
     model_provider: Literal["groq", "openai"] = "groq"
     config: Optional[ConfigLoader] = Field(default=None, exclude=True)
 
+    
+    ## This function is called after the model is initialized.
+    ## It ensures the configuration is available for the model provider.
     def model_post_init(self, __context: Any) -> None:
         self.config = ConfigLoader()
     
@@ -28,6 +35,11 @@ class ModelLoader(BaseModel):
     def load_llm(self):
         """
         Load and return the LLM model.
+
+        It checks which provider to use.
+        Then fetches the API key from .env.
+        Then fetches the model name from the config.
+        Finally, it creates and returns the right LLM object (ChatGroq or ChatOpenAI).
         """
         print("LLM loading...")
         print(f"Loading model from provider: {self.model_provider}")
